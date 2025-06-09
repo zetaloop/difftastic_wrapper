@@ -71,6 +71,12 @@ fn main() -> io::Result<()> {
 
     let mut line = String::with_capacity(1024);
     while reader.read_line(&mut line)? > 0 {
+        if line.ends_with('\n') {
+            line.pop();
+            if line.ends_with('\r') {
+                line.pop();
+            }
+        }
         process_line(&line, &mut handle)?;
         line.clear();
     }
