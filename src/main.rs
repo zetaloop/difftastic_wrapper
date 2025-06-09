@@ -66,19 +66,12 @@ fn main() -> io::Result<()> {
 
     let stdout = child.stdout.take().expect("Could not capture stdout");
 
-    let mut reader = BufReader::new(stdout);
+    let reader = BufReader::new(stdout);
     let mut handle = io::stdout();
 
-    let mut line = String::with_capacity(1024);
-    while reader.read_line(&mut line)? > 0 {
-        if line.ends_with('\n') {
-            line.pop();
-            if line.ends_with('\r') {
-                line.pop();
-            }
-        }
+    for line_res in reader.lines() {
+        let line = line_res?;
         process_line(&line, &mut handle)?;
-        line.clear();
     }
 
     let status = child.wait()?;
