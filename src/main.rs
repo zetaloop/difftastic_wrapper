@@ -2,21 +2,22 @@ use std::env;
 use std::io::{self, BufRead, BufReader, Write};
 use std::process::{Command, Stdio, exit};
 
+const GRAY: &str = "\x1b[2m";
+const RED: &str = "\x1b[91;1m";
+const GREEN: &str = "\x1b[92;1m";
+
 /// Search for a flag within the argument list. Returns `None` if the flag is not
 /// present. Returns `Some(Some(value))` if the flag is present with a value and
 /// `Some(None)` if the flag is present but no value follows.
 fn find_flag_value(args: &[String], flag: &str) -> Option<Option<String>> {
     let flag_with_eq = format!("{}=", flag);
-    for i in 0..args.len() {
-        if args[i] == flag {
-            return Some(args.get(i + 1).cloned());
+    args.iter().enumerate().find_map(|(i, arg)| {
+        if arg == flag {
+            Some(args.get(i + 1).cloned())
+        } else {
+            arg.strip_prefix(&flag_with_eq).map(|v| Some(v.to_string()))
         }
-
-        if let Some(v) = args[i].strip_prefix(&flag_with_eq) {
-            return Some(Some(v.to_string()));
-        }
-    }
-    None
+    })
 }
 
 fn main() -> io::Result<()> {
@@ -67,23 +68,23 @@ fn main() -> io::Result<()> {
     let stdout_lock = io::stdout();
     let mut handle = stdout_lock.lock();
 
-    let mut line = String::new();
+    let mut line = String::with_capacity(1024);
     while reader.read_line(&mut line)? > 0 {
         // Split the line into leading spaces and the rest
         let stripped = line.trim_start();
         let leading = &line[..line.len() - stripped.len()];
 
-        if stripped.starts_with("\x1b[2m") {
+        if stripped.starts_with(GRAY) {
             // Gray line numbers -> one space
             writeln!(handle, " {}", line)?;
-        } else if stripped.starts_with("\x1b[91;1m") {
+        } else if stripped.starts_with(RED) {
             // Red line numbers -> red -
-            let tail = &stripped["\x1b[91;1m".len()..];
-            write!(handle, "{}\x1b[91;1m-{}\n", leading, tail)?;
-        } else if stripped.starts_with("\x1b[92;1m") {
+            let tail = &stripped[RED.len()..];
+            write!(handle, "{}{}-{}\n", leading, RED, tail)?;
+        } else if stripped.starts_with(GREEN) {
             // Green line numbers -> green +
-            let tail = &stripped["\x1b[92;1m".len()..];
-            write!(handle, "\x1b[92;1m+{}{}\n", leading, tail)?;
+            let tail = &stripped[GREEN.len()..];
+            write!(handle, "{}+{}{}\n", GREEN, leading, tail)?;
         } else {
             writeln!(handle, "{}", line)?;
         }
