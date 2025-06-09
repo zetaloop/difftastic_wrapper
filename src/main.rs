@@ -6,13 +6,13 @@ use std::process::{Command, Stdio, exit};
 /// present. Returns `Some(Some(value))` if the flag is present with a value and
 /// `Some(None)` if the flag is present but no value follows.
 fn find_flag_value(args: &[String], flag: &str) -> Option<Option<String>> {
+    let flag_with_eq = format!("{}=", flag);
     for i in 0..args.len() {
         if args[i] == flag {
             return Some(args.get(i + 1).cloned());
         }
 
-        let with_eq = format!("{}=", flag);
-        if let Some(v) = args[i].strip_prefix(&with_eq) {
+        if let Some(v) = args[i].strip_prefix(&flag_with_eq) {
             return Some(Some(v.to_string()));
         }
     }
@@ -63,12 +63,12 @@ fn main() -> io::Result<()> {
 
     let stdout = child.stdout.take().expect("Could not capture stdout");
 
-    let reader = BufReader::new(stdout);
+    let mut reader = BufReader::new(stdout);
     let stdout_lock = io::stdout();
     let mut handle = stdout_lock.lock();
 
-    for line_res in reader.lines() {
-        let line = line_res?;
+    let mut line = String::new();
+    while reader.read_line(&mut line)? > 0 {
         // Split the line into leading spaces and the rest
         let stripped = line.trim_start();
         let leading = &line[..line.len() - stripped.len()];
@@ -87,6 +87,7 @@ fn main() -> io::Result<()> {
         } else {
             writeln!(handle, "{}", line)?;
         }
+        line.clear();
     }
 
     let status = child.wait()?;
