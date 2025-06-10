@@ -85,22 +85,8 @@ jobs:
         with:
           path: ./artifacts
 
-      - name: Create release package
-        run: |
-          mkdir -p release-package
-
-          # Copy all individual platform binaries
-          for target_dir in artifacts/difftw-*/; do
-            target_name=$(basename "$target_dir" | sed 's/difftw-//')
-            mkdir -p "release-package/$target_name"
-            cp -r "$target_dir"/* "release-package/$target_name/"
-          done
-
-          # Create a compressed archive
-          cd release-package && zip -r ../difftw-all-platforms.zip . && cd ..
-
       - name: Upload complete package
         uses: actions/upload-artifact@v4
         with:
           name: difftw-all-platforms
-          path: difftw-all-platforms.zip
+          path: artifacts/*
