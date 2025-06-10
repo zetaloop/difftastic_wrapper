@@ -62,12 +62,24 @@ Simply use `difftw` as a drop-in replacement for `difft`:
 difftw file1.txt file2.txt
 ```
 
-The wrapper automatically adds the required `--display=inline --color=always` flags if they're not present. You can also specify them manually:
+The wrapper automatically adds the required `--display=inline` flag and forces
+`difft` to emit colors. You can control whether the wrapper itself outputs
+colors using the `--color` option (`always`, `auto`, or `never`) or the
+`DFT_COLOR` environment variable. When not specified, the default is `auto`.
+Examples:
 ```bash
-difftw --display=inline --color=always file1.txt file2.txt
+# Always show colors
+difftw --color=always file1.txt file2.txt
+
+# Disable colors
+difftw --color=never file1.txt file2.txt
+
+# Auto-detect based on stdout
+difftw file1.txt file2.txt
 ```
 
-**Note**: This tool only supports inline display mode and always-on colors. If you specify different values for these flags, the tool will exit with an error.
+**Note**: This tool only supports inline display mode. If you specify a
+different value for `--display`, the tool will exit with an error.
 
 For git integration:
 ```bash
