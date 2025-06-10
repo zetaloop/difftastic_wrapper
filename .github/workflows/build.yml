@@ -93,7 +93,7 @@ jobs:
           mkdir -p zips
           for d in artifacts/*; do
             base=$(basename "$d")
-            zip -r zips/${base}.zip artifacts/${base}
+            zip -j zips/${base}.zip artifacts/${base}/*
           done
 
       - name: Upload complete package
