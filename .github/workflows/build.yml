@@ -1,4 +1,4 @@
-name: Build and Upload Binaries
+name: Build All
 
 on:
   workflow_dispatch:
@@ -36,13 +36,6 @@ jobs:
         if: runner.os == 'macOS' && matrix.arch == 'x64'
         run: |
           sudo softwareupdate --install-rosetta --agree-to-license
-
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.target }}
-          override: true
 
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
