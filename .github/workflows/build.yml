@@ -88,8 +88,16 @@ jobs:
         with:
           path: ./artifacts
 
+      - name: Create platform zips
+        run: |
+          mkdir -p zips
+          for d in artifacts/*; do
+            base=$(basename "$d")
+            zip -r zips/${base}.zip artifacts/${base}
+          done
+
       - name: Upload complete package
         uses: actions/upload-artifact@v4
         with:
           name: difftw-all-platforms
-          path: artifacts/*
+          path: zips/*.zip
