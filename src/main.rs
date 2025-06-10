@@ -1,6 +1,7 @@
 use std::env;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::{self, BufRead, BufReader, IsTerminal, Write};
 use std::process::{Command, Stdio, exit};
+use strip_ansi_escapes::strip_str;
 
 const GRAY: &str = "\x1b[2m";
 const RED: &str = "\x1b[91;1m";
@@ -33,20 +34,26 @@ fn validate_and_add_flags(args: &mut Vec<String>) {
     }
 }
 
-fn process_line(line: &str, handle: &mut impl Write) -> io::Result<()> {
+fn process_line(line: &str, handle: &mut impl Write, strip_color: bool) -> io::Result<()> {
     let trimmed = line.trim_start();
     let indent_len = line.len() - trimmed.len();
     let indent = &line[..indent_len];
 
-    if trimmed.starts_with(GRAY) {
-        writeln!(handle, " {}", line)
+    let mut output = if trimmed.starts_with(GRAY) {
+        format!(" {}\n", line)
     } else if trimmed.starts_with(RED) {
-        write!(handle, "{}{}-{}\n", indent, RED, &trimmed[RED.len()..])
+        format!("{}{}-{}\n", indent, RED, &trimmed[RED.len()..])
     } else if trimmed.starts_with(GREEN) {
-        write!(handle, "{}+{}{}\n", GREEN, indent, &trimmed[GREEN.len()..])
+        format!("{}+{}{}\n", GREEN, indent, &trimmed[GREEN.len()..])
     } else {
-        writeln!(handle, "{}", line)
+        format!("{}\n", line)
+    };
+
+    if strip_color {
+        output = strip_str(&output);
     }
+
+    write!(handle, "{}", output)
 }
 
 fn main() -> io::Result<()> {
@@ -68,10 +75,11 @@ fn main() -> io::Result<()> {
 
     let reader = BufReader::new(stdout);
     let mut handle = io::stdout();
+    let strip_color = !std::io::stdout().is_terminal();
 
     for line_res in reader.lines() {
         let line = line_res?;
-        process_line(&line, &mut handle)?;
+        process_line(&line, &mut handle, strip_color)?;
     }
 
     let status = child.wait()?;
