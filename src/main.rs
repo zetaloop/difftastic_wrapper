@@ -1,6 +1,5 @@
-use atty::Stream;
 use std::env;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::{self, BufRead, BufReader, IsTerminal, Write};
 use std::process::{Command, Stdio, exit};
 use strip_ansi_escapes::strip_str;
 
@@ -76,7 +75,7 @@ fn main() -> io::Result<()> {
 
     let reader = BufReader::new(stdout);
     let mut handle = io::stdout();
-    let strip_color = !atty::is(Stream::Stdout);
+    let strip_color = !std::io::stdout().is_terminal();
 
     for line_res in reader.lines() {
         let line = line_res?;
