@@ -76,7 +76,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: difftw-macos-universal
+          name: difftw-universal2-apple-darwin
           path: difftw
 
   package-all:
@@ -99,5 +99,5 @@ jobs:
       - name: Upload complete package
         uses: actions/upload-artifact@v4
         with:
-          name: difftw-all-platforms
+          name: difftw-all
           path: zips/*.zip
