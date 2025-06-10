@@ -57,14 +57,21 @@ cargo build --release
 
 ## Usage
 
-**Important**: This tool only works with specific difftastic flags:
+Simply use `difftw` as a drop-in replacement for `difft`:
+```bash
+difftw file1.txt file2.txt
+```
+
+The wrapper automatically adds the required `--display=inline --color=always` flags if they're not present. You can also specify them manually:
 ```bash
 difftw --display=inline --color=always file1.txt file2.txt
 ```
 
-Or set it as your git diff tool:
+**Note**: This tool only supports inline display mode and always-on colors. If you specify different values for these flags, the tool will exit with an error.
+
+For git integration:
 ```bash
-git config --global diff.external "difftw --display=inline --color=always"
+git config --global diff.external "difftw"
 ```
 
 This is a very experimental tool made for a specific use case - it only works with inline mode and relies on color detection.
